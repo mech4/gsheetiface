@@ -23,8 +23,6 @@ const app = express();
 
 app.get("/", async(req, res) => {
     const host = req.headers.host;
-    res.send(hostIndex(host).toString());
-    return;
     // Load client secrets from a local file.
     fs.readFile('credentials.json', (err, content) => {
         if (err) return res.json({"status": "Error", "message": "App parameter is not ready."});
@@ -34,7 +32,7 @@ app.get("/", async(req, res) => {
     function authorize(credentials, callback) {
         const {client_secret, client_id, redirect_uris} = credentials.web;
         const oAuth2Client = new google.auth.OAuth2(
-            client_id, client_secret, redirect_uris[0]);
+            client_id, client_secret, redirect_uris[hostIndex(host)]);
       
         // Check if we have previously stored a token.
         fs.readFile(TOKEN_PATH, (err, token) => {
@@ -58,6 +56,7 @@ app.get("/", async(req, res) => {
 })
 
 app.get("/forceNewToken", async(req, res) => {
+    const host = req.headers.host;
     fs.readFile('credentials.json', (err, content) => {
         if (err) return res.json({"status": "Error", "message": "App parameter is not ready"});
         // Authorize a client with credentials.
@@ -67,7 +66,7 @@ app.get("/forceNewToken", async(req, res) => {
     function reAuthorize(credentials) {
         const {client_secret, client_id, redirect_uris} = credentials.web;
         const oAuth2Client = new google.auth.OAuth2(
-            client_id, client_secret, redirect_uris[0]);
+            client_id, client_secret, redirect_uris[hostIndex(host)]);
         return oAuth2Client.generateAuthUrl({
             access_type: 'offline',
             scope: SCOPES,
@@ -89,6 +88,8 @@ app.get("/updateToken", async(req, res) => {
 })
 
 app.get("/data", async(req, res) => {
+    const host = req.headers.host;
+
     // List available API
     const api_list = ["unit_pe", "ibe", "ibp"];
     if (!api_list.includes(req.query.name)) 
@@ -102,7 +103,7 @@ app.get("/data", async(req, res) => {
     function authorize(credentials, callback) {
         const {client_secret, client_id, redirect_uris} = credentials.web;
         const oAuth2Client = new google.auth.OAuth2(
-            client_id, client_secret, redirect_uris[0]);
+            client_id, client_secret, redirect_uris[hostIndex(host)]);
       
         // Check if we have previously stored a token.
         fs.readFile(TOKEN_PATH, (err, token) => {
